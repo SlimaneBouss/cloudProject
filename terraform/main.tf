@@ -35,7 +35,8 @@ resource "aws_instance" "t2" {
     vpc_security_group_ids = [
         aws_security_group.everywhere.id,
     ]
-    subnet_id = element(tolist(data.aws_subnets.all.ids), 1)
 
+    subnet_id = element(tolist(data.aws_subnets.all.ids), 1)
+    user_data = "${file("${path.module}/../stand_alone.sh")}"
     ami = "ami-08c40ec9ead489470"
 }
