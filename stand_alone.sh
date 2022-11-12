@@ -21,5 +21,8 @@ EOF
 #connect 
 sudo mysql -u root -p <<EOF 
 sql 
+SOURCE /home/ubuntu/sakila-schema.sql;
+SOURCE /home/ubuntu/sakila-data.sql;
+exit
 EOF
 

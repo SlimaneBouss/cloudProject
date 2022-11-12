@@ -39,4 +39,23 @@ resource "aws_instance" "t2" {
     subnet_id = element(tolist(data.aws_subnets.all.ids), 1)
     user_data = "${file("${path.module}/../stand_alone.sh")}"
     ami = "ami-08c40ec9ead489470"
+
+    provisioner "file" {
+        source      = "../sakila-db/sakila-data.sql"
+        destination = "/home/ubuntu/sakila-data.sql"
+    }
+
+    provisioner "file" {
+        source      = "../sakila-db/sakila-schema.sql"
+        destination = "/home/ubuntu/sakila-schema.sql"
+    }
+
+    connection {
+        type = "ssh"
+        user = "ubuntu"
+        private_key = file("../key.pem")
+        host = self.public_ip
+    }
+
+
 }
