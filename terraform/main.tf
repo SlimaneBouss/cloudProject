@@ -1,61 +1,92 @@
 terraform {
-    required_providers {
-      aws = {
-        source = "hashicorp/aws"
-        version = "~>4.0"
-      }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.16"
     }
+  }
+
+  required_version = ">= 1.2.0"
 }
 
-resource "aws_security_group" "everywhere" {
-    name   = "everywhere"
-    vpc_id = "${data.aws_vpc.default.id}"
 
-    ingress {
-        protocol    = -1
-        cidr_blocks = ["0.0.0.0/0"]
-        from_port   = 0
-        to_port     = 0
-    }
-    egress {
-        protocol    = -1
-        cidr_blocks = ["0.0.0.0/0"]
-        from_port   = 0
-        to_port     = 0
-    }
+resource "aws_security_group" "security_gp" {
+  vpc_id = data.aws_vpc.default.id
 
+  ingress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
 }
 
-resource "aws_instance" "t2" {
-    count = 1
-
-    instance_type = "${var.t2_stand_alone}"
-    key_name = "${var.key_name}"
-
-    vpc_security_group_ids = [
-        aws_security_group.everywhere.id,
-    ]
-
-    subnet_id = element(tolist(data.aws_subnets.all.ids), 1)
-    user_data = "${file("${path.module}/../stand_alone.sh")}"
-    ami = "ami-08c40ec9ead489470"
-
-    provisioner "file" {
-        source      = "../sakila-db/sakila-data.sql"
-        destination = "/home/ubuntu/sakila-data.sql"
-    }
-
-    provisioner "file" {
-        source      = "../sakila-db/sakila-schema.sql"
-        destination = "/home/ubuntu/sakila-schema.sql"
-    }
-
-    connection {
-        type = "ssh"
-        user = "ubuntu"
-        private_key = file("../key.pem")
-        host = self.public_ip
-    }
+data "aws_vpc" "default" {
+  default = true
+}
 
 
+# resource "aws_instance" "proxy" {
+#   ami                    = "ami-0149b2da6ceec4bb0"
+#   instance_type          = "t2.large"
+#   vpc_security_group_ids = [aws_security_group.security_gp.id]
+#   availability_zone      = "us-east-1c"
+#   tags = {
+#     Name = "Proxy"
+#   }
+# }
+
+
+resource "aws_instance" "cluster-data1" {
+  ami                    = "ami-0149b2da6ceec4bb0"
+  instance_type          = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.security_gp.id]
+  availability_zone      = "us-east-1c"
+  tags = {
+    Name = "Data Node 1"
+  }
+  key_name = "ec2-keypair"
+}
+
+resource "aws_instance" "cluster-data2" {
+  ami                    = "ami-0149b2da6ceec4bb0"
+  instance_type          = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.security_gp.id]
+  availability_zone      = "us-east-1c"
+  tags = {
+    Name = "Data Node 2"
+  }
+  key_name = "ec2-keypair"
+}
+
+# resource "aws_instance" "cluster-data3" {
+#   ami                    = "ami-0149b2da6ceec4bb0"
+#   instance_type          = "t2.micro"
+#   vpc_security_group_ids = [aws_security_group.security_gp.id]
+#   availability_zone      = "us-east-1c"
+#   tags = {
+#     Name = "Data Node 3"
+#   }
+#   key_name = "ec2-keypair"
+# }
+
+
+resource "aws_instance" "cluster-mgm" {
+  ami                    = "ami-0149b2da6ceec4bb0"
+  instance_type          = "t2.micro"
+  vpc_security_group_ids = [aws_security_group.security_gp.id]
+  availability_zone      = "us-east-1c"
+  tags = {
+    Name = "Management Node"
+  }
+  key_name = "ec2-keypair"
 }
