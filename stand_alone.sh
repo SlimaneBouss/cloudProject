@@ -51,7 +51,5 @@ sudo sh -c "sysbench \
 /usr/share/sysbench/oltp_read_write.lua run > /home/ubuntu/bm_st.txt"
 
 
-
-GRANT SELECT, INSERT, DELETE ON sakila.* TO 'localuser'@'bras-base-mtrlpq3704w-grc-22-174-91-192-181.dsl.bell.ca';
-CREATE USER 'localuser'@'bras-base-mtrlpq3704w-grc-22-174-91-192-181.dsl.bell.ca' IDENTIFIED BY 'local';
-GRANT ALL PRIVILEGES on sakila.* TO 'localuser'@'bras-base-mtrlpq3704w-grc-22-174-91-192-181.dsl.bell.ca';
+CREATE USER 'localuser'@'3.92.245.174' IDENTIFIED BY 'local';
+GRANT ALL PRIVILEGES on sakila.* TO 'localuser'@'3.92.245.174';

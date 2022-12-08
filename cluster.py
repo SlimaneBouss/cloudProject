@@ -1,7 +1,7 @@
 import helper
 import time
 
-def create_cluster(ec2,client, sg_name, vpc_id,master_script, slave_script) :
+def create_cluster(ec2,client, sg_id,master_script, slave_script) :
 
 
     with open(master_script, 'r') as r:
@@ -11,8 +11,8 @@ def create_cluster(ec2,client, sg_name, vpc_id,master_script, slave_script) :
         ss = r.read()
 
     #Set up
-    print("creating security group for cluster...")
-    sg_id = helper.create_sg(client,ec2,sg_name,vpc_id)
+    print("Creating key pair")
+    helper.create_key(ec2)
     time.sleep(1)
     print("Getting the the subnet id for the cluster...")
     subnet_id = helper.get_subnet_id(client,'us-east-1b')
@@ -30,8 +30,8 @@ def create_cluster(ec2,client, sg_name, vpc_id,master_script, slave_script) :
 
     #create slaves
     slaves = []
-    for i in range(1) :
-        slaves.append(create_slaves(ec2,sg_id,subnet_id,'slave ' + str(i+1),ss)[0])
+    for i in range(3) :
+        slaves.append(create_slaves(ec2,sg_id,subnet_id,'Slave ' + str(i+1),ss)[0])
     
     for slave in slaves :
         slave.wait_until_running()
@@ -44,7 +44,7 @@ def create_cluster(ec2,client, sg_name, vpc_id,master_script, slave_script) :
 
     return master
 
-
+#----------------------------------------------------------------------
 
 def create_master(ec2,sg_id,subnet_id,name,script) :
     return ec2.create_instances(
@@ -70,6 +70,8 @@ def create_master(ec2,sg_id,subnet_id,name,script) :
             },
         ],
     )
+
+#----------------------------------------------------------------------
 
 def create_slaves(ec2,sg_id,subnet_id,name,script) :
 

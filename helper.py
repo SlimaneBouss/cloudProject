@@ -14,6 +14,7 @@ def create_sg(client,ec2,sg_name,vpc_id) :
     sg.authorize_ingress(CidrIp='0.0.0.0/0', IpProtocol='tcp', FromPort=80, ToPort=80)
     sg.authorize_ingress(CidrIp='0.0.0.0/0', IpProtocol='tcp', FromPort=3306, ToPort=3306)
     sg.authorize_ingress(CidrIp='0.0.0.0/0', IpProtocol='tcp', FromPort=1186, ToPort=1186)
+    sg.authorize_ingress(CidrIp='0.0.0.0/0', IpProtocol='tcp', FromPort=5001, ToPort=5001)
 
 
     #returning the id
@@ -30,3 +31,14 @@ def get_subnet_id(client,subnet_name) :
  
 #----------------------------------------------------------------------
 
+def create_key(ec2) : 
+    # create a file to store the key locally
+    outfile = open('ec2-keypair.pem','w')
+
+    # call the boto ec2 function to create a key pair
+    key_pair = ec2.create_key_pair(KeyName='ec2-keypair')
+
+    # capture the key and store it in a file
+    KeyPairOut = str(key_pair.key_material)
+    print(KeyPairOut)
+    outfile.write(KeyPairOut)
