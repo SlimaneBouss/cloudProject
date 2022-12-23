@@ -1,6 +1,17 @@
 import helper
 import time
 
+"""
+Creates the cluster
+
+parameters :
+    ec2 (Resource)         -> The EC2 resource object
+    client (Client)        -> The EC2 client object
+    sg_id (String)         -> Id of the security groupe
+    master_script (String) -> Path to the user data file for the master
+    slave_script (String)  -> Path to the user data file for the slaves
+"""
+
 def create_cluster(ec2,client, sg_id,master_script, slave_script) :
 
 
@@ -39,13 +50,19 @@ def create_cluster(ec2,client, sg_id,master_script, slave_script) :
         dns_list.append(slave.public_dns_name)
         ips_list.append(slave.private_dns_name)
 
-    print(dns_list)
-    print(ips_list)
-
-    return master
-
 #----------------------------------------------------------------------
+"""
+Creates the master instance on EC2
 
+parameters :
+    ec2 (Resource)         -> The EC2 resource object
+    sg_id (String)         -> Id of the security groupe
+    subnet_id (String)     -> Id of the subnet 
+    script (String)        -> Path to the user data file for the master
+
+return :
+    Master instance
+"""
 def create_master(ec2,sg_id,subnet_id,name,script) :
     return ec2.create_instances(
         ImageId='ami-0149b2da6ceec4bb0',
@@ -72,6 +89,18 @@ def create_master(ec2,sg_id,subnet_id,name,script) :
     )
 
 #----------------------------------------------------------------------
+"""
+Creates a slave instance on EC2
+
+parameters :
+    ec2 (Resource)         -> The EC2 resource object
+    sg_id (String)         -> Id of the security groupe
+    subnet_id (String)     -> Id of the subnet 
+    script (String)        -> Path to the user data file for the slaves
+
+return :
+    Slave instance
+"""
 
 def create_slaves(ec2,sg_id,subnet_id,name,script) :
 

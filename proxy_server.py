@@ -6,17 +6,22 @@ from sshtunnel import SSHTunnelForwarder
 
 #Set up our data structures
 ping_vals = {}
-nodes ={'3.81.94.210': 'MASTER' ,'54.210.202.75':'SLAVE1','18.215.234.129 ':'SLAVE2'}
+nodes ={'18.234.70.192': 'MASTER','34.203.193.241':'SLAVE1','34.204.84.78':'SLAVE2', '107.21.198.104' : 'SLAVE3'}
 for k in nodes.keys():
     ping_vals[k] = 0
 
 #Connect to our master node
-host_conn = pymysql.connect(host='3.81.94.210',user='localuser',password='local',db='sakila',port=3306,autocommit=True)
+host_conn = pymysql.connect(host='18.234.70.192',user='proxy',password='pass',db='sakila',port=3306,autocommit=True)
 curr = host_conn.cursor()
 
 #----------------------------------------------------------------------
+"""
+Pings all the machines in the cluster and checks the fastest response
 
-#pings all the machines in the cluster and checks the fastest response
+return :
+    node ip (string), name of the node (string)
+
+"""
 def ping() : 
     for key in ping_vals.keys() :
         var = os.popen('ping -c 2 ' + key).read()
@@ -25,15 +30,26 @@ def ping() :
     return min(ping_vals.items(),key=lambda x: x[1])[0]
 
 #----------------------------------------------------------------------
+"""
+Get a random node to query to
 
-#Get random node to query to
+return :
+    node ip (string), name of the node (string)
+"""
+
 def get_random_node() :
     k = random.choice(list(nodes.keys()))
     return k, nodes[k]
 
 #----------------------------------------------------------------------
+"""
+executes a command intended for the master node
 
-#executes a command intended for the master node
+parameter : 
+    cmd (string)          -> the command to execute
+    clientsocket (Socket) -> The socket throught where the data is sent to proxy
+"""
+
 def execute_master(cmd,clientsocket) : 
     curr.execute(cmd[2:])
     output = curr.fetchall()
@@ -44,12 +60,21 @@ def execute_master(cmd,clientsocket) :
         clientsocket.send(bytes("MASTER : OK !", "utf-8"))
 
 #----------------------------------------------------------------------
+"""
+executes a command intended for one of the slave nodes
 
-#executes a command intended for one of the slave nodes
+parameter : 
+    cmd (string)          -> The command to execute
+    clientsocket (Socket) -> The socket throught where the data is sent to proxy
+    ip (String)           -> The ip of the node to send the command to
+    name (String)         -> Th name of the node
+"""
+
+
 def execute_in_slave(cmd,clientsocket,ip,name) : 
-    with SSHTunnelForwarder(ip, ssh_username='ubuntu',ssh_pkey='ec2-keypair.pem',remote_bind_address=('3.81.94.210',3306)) as tunnel:
+    with SSHTunnelForwarder(ip, ssh_username='ubuntu',ssh_pkey='ec2-keypair.pem',remote_bind_address=('18.234.70.192',3306)) as tunnel:
 
-        slave_conn = pymysql.connect(host='3.81.94.210',user='localuser',password='local',db='sakila',port=3306,autocommit=True)
+        slave_conn = pymysql.connect(host='18.234.70.192',user='proxy',password='pass',db='sakila',port=3306,autocommit=True)
         slave_curr = slave_conn.cursor()
         slave_curr.execute(cmd[2:])
         output = slave_curr.fetchall()
@@ -61,8 +86,14 @@ def execute_in_slave(cmd,clientsocket,ip,name) :
         slave_conn.close()
 
 #----------------------------------------------------------------------
+"""
+routes to different modes
 
-#routes to different modes
+parameter : 
+    cmd (string)          -> The command to execute
+    clientsocket (Socket) -> The socket throught where the data is sent to proxy
+"""
+
 def route(cmd,clientsocket) : 
     if cmd[0] == '0' :
         execute_master(cmd,clientsocket)
@@ -82,7 +113,9 @@ def route(cmd,clientsocket) :
             execute_in_slave(cmd,clientsocket,ip,nodes[ip])
 
 #----------------------------------------------------------------------
-
+"""
+The open socket ready to receive and execute the commands
+"""
 def main():
     host = ''
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

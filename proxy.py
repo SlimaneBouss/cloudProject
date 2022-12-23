@@ -1,6 +1,16 @@
 import helper
 import time
 
+"""
+Creates the proxy instance on EC2
+
+parameters :
+    client (Client)      -> The EC2 client object
+    ec2 (Resource)       -> The EC2 resource object
+    sg_id (String)       -> Id of the security groupe
+"""
+
+
 def create_proxy(client,ec2,sg_id) :
 
     print("Getting the the subnet id ...")

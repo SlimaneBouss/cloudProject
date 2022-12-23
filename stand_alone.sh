@@ -49,7 +49,3 @@ sudo sh -c "sysbench \
 --events=0 \
 --report-interval=1 \
 /usr/share/sysbench/oltp_read_write.lua run > /home/ubuntu/bm_st.txt"
-
-
-CREATE USER 'localuser'@'3.92.245.174' IDENTIFIED BY 'local';
-GRANT ALL PRIVILEGES on sakila.* TO 'localuser'@'3.92.245.174';

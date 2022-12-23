@@ -1,6 +1,20 @@
 import helper
 import time
 
+"""
+Creates the stand alone instance on EC2
+
+parameters :
+    client (Client)      -> The EC2 client object
+    ec2 (Resource)       -> The EC2 resource object
+    script_file (String) -> Path to the user data file
+    sg_name (String)     -> Name of the security groupe
+    vpc_id (String)      -> The vpc id
+
+return :
+    The public dns name of the stand alone instance
+"""
+
 def create_stand_alone(client,ec2,script_file, sg_name, vpc_id) :
 
     print("creating security group ...")

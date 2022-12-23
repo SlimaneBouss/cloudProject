@@ -14,6 +14,9 @@ VPC_ID = client.describe_vpcs().get('Vpcs', [{}])[0].get('VpcId', '')
 SG_NAME_STANDALONE = 'sa_sg'
 SG_NAME_CLUSTER_PROXY = 'cluster_sg'
 
+"""
+Creating all the instances and fetches the benchmark file for the stand alone
+"""
 
 def main() :
 

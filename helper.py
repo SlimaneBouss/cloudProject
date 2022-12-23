@@ -1,5 +1,18 @@
 import subprocess
 
+"""
+Creates the security group
+
+parameters :
+    client (Client)      -> The EC2 client object
+    ec2 (Resource)       -> The EC2 resource object
+    sg_name (String)     -> Name of the security groupe
+    vpc_id (String)      -> The vpc id
+
+return :
+    sg_id (String) -> The id of the security group
+"""
+
 def create_sg(client,ec2,sg_name,vpc_id) :
 
     #create security group
@@ -21,6 +34,16 @@ def create_sg(client,ec2,sg_name,vpc_id) :
     return sg_id
 
 #----------------------------------------------------------------------
+"""
+Fetches the subnet id for a specific subnet
+
+parameters :
+    client (Client)          -> The EC2 client object
+    subnet_name (String)     -> Name of the subnet
+
+return : 
+    The subnet id
+"""
 
 def get_subnet_id(client,subnet_name) :
     sb_list = client.describe_subnets()['Subnets']
@@ -30,7 +53,12 @@ def get_subnet_id(client,subnet_name) :
             return sb['SubnetId']
  
 #----------------------------------------------------------------------
+"""
+Creates a key pair
 
+parameters :
+    client (Client) -> The EC2 client object
+"""
 def create_key(ec2) : 
     # create a file to store the key locally
     outfile = open('ec2-keypair.pem','w')
